@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TaskSync</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+
+    <style>
+        /* Add some styling to make boards distinct */
+        .board-container {
+            margin: 10px;
+            padding: 10px;
+        }
+
+        /* Style for columns */
+        .columns-container {
+            border: 2px solid #000;
+            margin: 10px;
+            padding: 10px;
+            display: flex;
+        }
+
+        .column {
+            border: 1px solid #333;
+            padding: 10px;
+            margin: 10px;
+            width: calc(33.33% - 20px);
+            box-sizing: border-box;
+            display: inline-block;
+        }
+
+        .task {
+            border: 1px solid #888;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .task-content {
+            margin-bottom: 20px; /* Add margin to separate content from buttons */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div id="message-container"></div>
+        <h1 class="mb-4">TaskSync - Dashboard</h1>
+
+        <!-- User Information and Profile Picture -->
+        <div class="user-info">
+            <img id="profile-picture" src="" alt="Profile Picture" width="200" height="200">
+            <h4 id="username"></h4>
+            <!-- Add file input for profile picture update -->
+            <input type="file" id="profile-picture-input" accept="image/*">
+        </div>
+
+        <button class="btn btn-warning" onclick="updateProfilePicture()">Update Profile Picture</button>
+        <button class="btn btn-info" data-toggle="modal" data-target="#accountModal">Account Info</button>
+
+        <!-- Account Information Modal -->
+        <div class="modal fade" id="accountModal" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="accountModalLabel">Account Information</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="accountInfoBody">
+                        <!-- Account information content will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="boards">
+            <h2 class="mt-4">Create a New Board</h2>
+            <div class="form-group">
+                <input type="text" class="form-control" id="boardName" placeholder="Board Name">
+            </div>
+            <button class="btn btn-primary" onclick="createBoard()">Create Board</button>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
+
+            <h2 class="mt-4">Kanban Boards</h2>
+            <div id="boardList" class="board-container">
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Fetch user information
+                    fetch('/user-data')  // Updated to use the correct route
+                        .then(response => response.json())
+                        .then(data => {
+                            // Update user information and profile picture
+                            document.getElementById('username').innerText = data.user_data.username;
+                            document.getElementById('profile-picture').src = `/static/images/${data.user_data.profile_picture}`;
+
+                            // Fetch the boards_data from Flask and call displayBoards
+                            fetch('/dashboard-data')
+                                .then(response => response.json())
+                                .then(data => displayBoards(data.boards_data));
+                        });
+                });
+            </script>
+        </div>
+
+        <!-- Bootstrap JS and Popper.js scripts -->
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <script src="{{ url_for('static', filename='main.js') }}"></script>
+    </div>
+</body>
+</html>
